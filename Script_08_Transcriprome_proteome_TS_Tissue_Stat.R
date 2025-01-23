@@ -1,6 +1,6 @@
-####各个组织RNA Speceifc & RNA Enriched not Specific数量
+####each tissue RNA Speceifc & RNA Enriched not Specific数量
 ###PRO Speceifc & PRO Enriched not Specific
-##准备文件：PRO_Enriched_not_specfic    PRO_Specific
+##Prepare the document：PRO_Enriched_not_specfic    PRO_Specific
 ##          RNA_Enriched_not_specfic    RNA_Specific
 rm(list = ls())
 PRO_Enriched_not_specific <- read.csv("D:/Workspace/Glycine_max/Tissue_Specifity/Tissue_Specifity/Hou/PRO/PRO_Enriched_not_specific.csv",row.names = 1)
@@ -31,7 +31,7 @@ RNA_Enriched_not_specific_Stat$Tissue <- colnames(PRO_Score_Tissue)
 RNA_Enriched_not_specific_Stat$Type <- "RNA"
 RNA_Enriched_not_specific_Stat$Category <- "RNA Enriched not Specific"
 for (i in 1:14) {
-  # 统计"PRO_enriched"单元格数量
+  # count "PRO_enriched" number
   PRO_Specific_Stat[i, 2] <- sum(PRO_Specific[, i] >= 4, na.rm = TRUE)
   PRO_Enriched_not_specific_Stat[i, 2] <- sum(PRO_Enriched_not_specific[, i] >=2.5, na.rm = TRUE)
   RNA_Specific_Stat[i, 2] <- sum(RNA_Specific[, i] >= 4, na.rm = TRUE)
@@ -44,7 +44,7 @@ Stat_Data$Category <-factor(Stat_Data$Category,levels=c("PRO Specific","PRO Enri
 
 Stat_Data$Tissue= factor(Stat_Data$Tissue,levels =rev(c("Pod_R6","GSD_R7","MSD_R8","ISD","RT_VE","RT_V1","RT_R5","RTN_R5",
                                                     "CT_VE","CT_V1","ULF_V1","TLF_V1","SM_V1","FL_R2")))
-##绘图
+####plot#####
 library(RColorBrewer)
 library(tidyverse)
 library(cowplot)
