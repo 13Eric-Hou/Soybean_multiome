@@ -1,6 +1,4 @@
 ###Frequency + Stat + Category
-#蛋白质在14个Frequency中鉴定到的基因数目
-##准备文件：原始表达量文件；进行Frequency的判断
 library(RColorBrewer)
 library(ggplot2)
 library(ggthemes)
@@ -17,7 +15,7 @@ RNA_Enriched_not_specific <-  read.csv("./Hou/RNA/RNA_Enriched_not_specific.csv"
 RNA_housekeeping <-  read.csv("./Hou/RNA/RNA_housekeeping.csv",row.names = 1)
 RNA_others <- read.csv("./Hou/RNA/RNA_others.csv",row.names = 1)
 for (i in 1:nrow(PRO_co_quantified_sample)) {
-  # 判断每个组是否有至少一个非NA值
+  # adjust NA
   for (j in 1:14) {
     cols <- ((j - 1) * 3 + 1):((j - 1) * 3 + 3)
     if (any(!is.na(PRO_co_quantified_sample[i, cols]))) {
@@ -33,30 +31,30 @@ colnames(Data) <- c("Frequency","Category")
 rownames(Data) <- rownames(Frequency_adjust)
 Data$Frequency <- Frequency_adjust$Frequency
 for (i in 1:nrow(Data)) {
-  # 判断当前行名是否在需要修改的行名向量中
+  
   if (rownames(Data)[i] %in% rownames(PRO_Specific)) {
-    # 将对应行的第二列改为"Tissue Specific"
+    
     Data[i, 2] <- "Tissue Specific"
   }
 }
 for (i in 1:nrow(Data)) {
-  # 判断当前行名是否在需要修改的行名向量中
+  
   if (rownames(Data)[i] %in% rownames(PRO_Enriched_not_specific)) {
-    # 将对应行的第二列改为"PRO Specific"
+ 
     Data[i, 2] <- "Tissue Enriched not Specific"
   }
 }
 for (i in 1:nrow(Data)) {
-  # 判断当前行名是否在需要修改的行名向量中
+
   if (rownames(Data)[i] %in% rownames(PRO_others)) {
-    # 将对应行的第二列改为"PRO Specific"
+
     Data[i, 2] <- "Others"
   }
 }
 for (i in 1:nrow(Data)) {
-  # 判断当前行名是否在需要修改的行名向量中
+
   if (rownames(Data)[i] %in% rownames(PRO_housekeeping)) {
-    # 将对应行的第二列改为"PRO Specific"
+
     Data[i, 2] <- "HouseKeeping"
   }
 }
@@ -78,8 +76,8 @@ P1 <- ggplot(data=Data,aes(x=Frequency))+
   scale_y_continuous(breaks=seq(0,7000,1000), labels=c(0,1000,2000,3000,4000,5000,6000,7000))+
   labs(x="number of observed tissues")
 
-####全统计绘图(RNA以及蛋白质)####
-#蛋白质统计文件准备#
+####plot####
+#protein count data#
 PRO_Stat_All <- data.frame(matrix("", nrow = 4, ncol =3))
 colnames(PRO_Stat_All) <- c("Type","Category","Number")
 PRO_Stat_All$Type <- "Proteome"
@@ -91,7 +89,7 @@ PRO_Stat_All[3,2] <- "HouseKeeping"
 PRO_Stat_All[3,3] <- nrow(PRO_housekeeping)
 PRO_Stat_All[4,2] <- "Others"
 PRO_Stat_All[4,3] <- nrow(PRO_others)
-#RNA统计文件准备#
+#RNA count data
 RNA_Stat_All <- data.frame(matrix("", nrow = 4, ncol =3))
 colnames(RNA_Stat_All) <- c("Type","Category","Number")
 RNA_Stat_All$Type <- "Transcriptome"
