@@ -1,4 +1,4 @@
-####Core-RNA 相关性####
+####Core-RNA correlation####
 rm(list = ls())
 RNA <- read.csv("D:/Workspace/Glycine_max/RNA_Seq/TPM/Gene_TPM.csv",row.names = 1)
 RNA_Tissue <- data.frame(matrix("", nrow = 56750, ncol =14))
@@ -18,8 +18,7 @@ for (i in 1:14)
     RNA_Tissue[,i] <- as.numeric(RNA_Tissue[,i])
   }
 RNA_Tissue[is.nan(as.matrix(RNA_Tissue))] <- NA
-####转录表达量####
-##筛选出Core以及Non-Core
+##adjust core and non_core
 Temp <- RNA_Tissue
 RNA_Tissue <- Temp
 RNA_Tissue[RNA_Tissue >= 1] <- "Core"
@@ -29,7 +28,7 @@ RNA_Expression<- log2(RNA_Expression)
 
 #RNA_Expression[is.na(RNA_Expression)] <- 0
 
-##Core基因的转录之间的相关性（Pairwise global Pearson’s correlation）##
+##correlation analysis（Pairwise global Pearson’s correlation）##
 Result_1 <- data.frame(matrix("", nrow = 14, ncol =14))
 colnames(Result_1) <- Tissue_info
 rownames(Result_1) <- Tissue_info
@@ -51,7 +50,7 @@ for (i in 1:14)
     }
    
   }
-##Non-core基因之间的转录之间的相关性（Pairwise global Pearson’s correlation）##
+##Non-core correlation analysis（Pairwise global Pearson’s correlation）##
 Result_2 <- data.frame(matrix("", nrow = 14, ncol =14))
 colnames(Result_2) <- Tissue_info
 rownames(Result_2) <- Tissue_info
@@ -80,13 +79,12 @@ Result_1 <- Result_1[row_order,]
 Result_1 <-Result_1[,col_order]
 Result_2 <- Result_2[row_order,]
 Result_2 <-Result_2[,col_order]
-##整合在一个表格之中##
 Result <- Result_1
 for (i in 2:14) 
   {
     Result[i:14,i-1] <- Result_2[i:14,i-1]
 }
-##绘制热图##
+##pheatmap##
 library(tidyverse)
 library(ggplot2)
 library(pheatmap)
@@ -105,7 +103,7 @@ pheatmap(Result,
          breaks = c(seq(0, 0.4, length.out = 50), 
                     seq(0.401,1, length.out = 50)))
 
-####蛋白表达量####
+####protein expression####
 PRO_Expression <-read.csv("D:/Workspace/Glycine_max/Data/PRO_VSN_Gene_Tissue.csv",row.names = 1)
 Result_1 <- data.frame(matrix("", nrow = 14, ncol =14))
 colnames(Result_1) <- Tissue_info
@@ -127,7 +125,7 @@ for (i in 1:14)
   }
   
 }
-##Non-core基因之间的转录之间的相关性（Pairwise global Pearson’s correlation）##
+##Non-core gene correlation analysis（Pairwise global Pearson’s correlation）##
 Result_2 <- data.frame(matrix("", nrow = 14, ncol =14))
 colnames(Result_2) <- Tissue_info
 rownames(Result_2) <- Tissue_info
@@ -156,13 +154,12 @@ Result_1 <- Result_1[row_order,]
 Result_1 <-Result_1[,col_order]
 Result_2 <- Result_2[row_order,]
 Result_2 <-Result_2[,col_order]
-##整合在一个表格之中##
 Result <- Result_1
 for (i in 2:14) 
 {
   Result[i:14,i-1] <- Result_2[i:14,i-1]
 }
-##绘制热图##
+##pheatmap##
 library(tidyverse)
 library(ggplot2)
 library(pheatmap)
