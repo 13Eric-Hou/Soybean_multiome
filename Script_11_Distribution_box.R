@@ -22,9 +22,9 @@ m6A <- C_m6A
 folder_path <-"D:/Workspace/Glycine_max/m6A/3_19/nonconserved/nonconserved/"
 for (i in 1:14)
 {
-  # 构建文件路径
+  
   file_path <- file.path(folder_path, paste0("non", i, "conserved.anno.peak.new.anno.txt"))
-  # 导入数据
+  # load data
   Data <- read.delim(file_path)
   Data <- Data[,c(6,14)]
   colnames(Data)<- colnames(C_m6A)
@@ -129,7 +129,7 @@ Data$factor <- factor(Data$factor,levels = rev(c("RNA abundance","Codon usage", 
 
 
 write.csv(Data,file="../Data.csv")
-####绘制小提琴图####
+####violin plot ####
 library(ggplot2)
 library(RColorBrewer)
 library(ggthemes)
