@@ -1,18 +1,17 @@
-####Spearman相关性与m6A level（平均水平）散点图+拟合线####
+####Spearman Correlation of proteins with and without m6A modification with transcription####
 rm(list = ls())
 library(ggplot2)
 library(RColorBrewer)
 library(tidyverse)
-####各个组织m6A基因蛋白与转录之间的Spearman相关性####
 Tissue_info <-  c("ISD","CT_VE","RT_VE","ULF_V1","SM_V1","RT_V1","CT_V1","TLF_V1","FL_R2","RT_R5","Pod_R6","RTN_R5","GSD_R7","MSD_R8")
 C <- read.delim("../../../3_19/conserved.txt")
 C <- unique(C[,13])
 folder_path <-"D:/Workspace/Glycine_max/m6A/3_19/nonconserved/nonconserved/"
 for (i in 1:14)
 {
-  # 构建文件路径
+  # 
   file_path <- file.path(folder_path, paste0("non", i, "conserved.anno.peak.new.anno.txt"))
-  # 导入数据
+  # load data
   Data <- read.delim(file_path)
   Data <- unique(Data[,14])
   name <- paste0("NC", i)
@@ -26,7 +25,7 @@ for (i in 1:14) {
   name <- paste0("M", i)
   assign(name, Data)
 }
-##表达量关联##
+##RNA & PRO expression tidy##
 PRO <- read.csv("D:/Workspace/Glycine_max/Data/PRO_Raw_Gene_Tissue.csv",row.names = 1)
 ###RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue.csv",row.names = 1)###此处不要过滤后TPM文件
 RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue_1.csv",row.names = 1)
@@ -40,7 +39,7 @@ for (i in 1:nrow(PRO)) {
     if (is.na(PRO[i,j]) & !is.na(RNA[i,j])) {RNA[i,j] <- NA}
   }
 }
-##准备结果文件##
+##prepare result ##
 Result_all <- data.frame(matrix("", nrow = 14, ncol =3))
 colnames(Result_all) <- c("Tissue","m6A","non-m6A")
 Result_all$Tissue <- Tissue_info
@@ -49,9 +48,9 @@ for (i in 1:14)
 { 
   name <- paste0("M", i)
   data <-get(name)
-  PRO_temp <- subset(PRO,rownames(PRO)%in%data)  ####第一个组织既有m6A又可能有蛋白表达水平的基因
-  PRO_temp <- PRO_temp[!is.na(PRO_temp[,i]),]    ####第一个组织既有m6A又有蛋白表达水平的基因
-  RNA_temp <-  subset(RNA,rownames(RNA)%in%data)####第一个组织既有m6A和蛋白表达水平，可能有的基因
+  PRO_temp <- subset(PRO,rownames(PRO)%in%data) 
+  PRO_temp <- PRO_temp[!is.na(PRO_temp[,i]),]    
+  RNA_temp <-  subset(RNA,rownames(RNA)%in%data)
   RNA_temp <- RNA_temp[!is.na(RNA_temp[,i]),]
   PRO_temp <-  subset(PRO_temp,rownames(PRO_temp)%in%rownames(RNA_temp))
   Result_all[i,2] <- cor(RNA_temp[,i],PRO_temp[,i],method = "spearman",use = "na.or.complete")
@@ -89,7 +88,7 @@ P_ALL <- ggplot(Data,aes(Spearman,Cofficient))+
 library(ggplot2)
 library(RColorBrewer)
 library(tidyverse)
-####各个组织m6A基因蛋白与转录之间的Spearman相关性####
+
 Tissue_info <-  c("ISD","CT_VE","RT_VE","ULF_V1","SM_V1","RT_V1","CT_V1","TLF_V1","FL_R2","RT_R5","Pod_R6","RTN_R5","GSD_R7","MSD_R8")
 C <- read.delim("../../../3_19/conserved.txt")
 C <- C[C$annotation=="3' UTR",]
@@ -97,9 +96,9 @@ C <- unique(C[,13])
 folder_path <-"D:/Workspace/Glycine_max/m6A/3_19/nonconserved/nonconserved/"
 for (i in 1:14)
 {
-  # 构建文件路径
+  
   file_path <- file.path(folder_path, paste0("non", i, "conserved.anno.peak.new.anno.txt"))
-  # 导入数据
+ 
   Data <- read.delim(file_path)
   Data <-Data[Data$annotation=="3' UTR",]
   Data <- unique(Data[,14])
@@ -114,7 +113,7 @@ for (i in 1:14) {
   name <- paste0("M", i)
   assign(name, Data)
 }
-##表达量关联##
+
 PRO <- read.csv("D:/Workspace/Glycine_max/Data/PRO_VSN_Gene_Tissue.csv",row.names = 1)
 ###RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue.csv",row.names = 1)###此处不要过滤后TPM文件
 RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue_1.csv",row.names = 1)
@@ -125,14 +124,14 @@ RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue_1.csv",row.names = 1)
 J <- intersect(rownames(PRO),rownames(RNA))
 PRO <- subset(PRO,rownames(PRO) %in% J)
 RNA <- subset(RNA,rownames(RNA) %in% J)
-##Pairwise##
+
 for (i in 1:nrow(PRO)) {
   for (j in 1:ncol(RNA)) {
     if (!is.na(PRO[i,j]) & is.na(RNA[i,j])) {PRO[i,j] <- NA}
     if (is.na(PRO[i,j]) & !is.na(RNA[i,j])) {RNA[i,j] <- NA}
   }
 }
-##准备结果文件##
+
 Result_all <- data.frame(matrix("", nrow = 14, ncol =3))
 colnames(Result_all) <- c("Tissue","m6A","non-m6A")
 Result_all$Tissue <- Tissue_info
@@ -141,9 +140,9 @@ for (i in 1:14)
 { 
   name <- paste0("M", i)
   data <-get(name)
-  PRO_temp <- subset(PRO,rownames(PRO)%in%data)  ####第一个组织既有m6A又可能有蛋白表达水平的基因
-  PRO_temp <- PRO_temp[!is.na(PRO_temp[,i]),]    ####第一个组织既有m6A又有蛋白表达水平的基因
-  RNA_temp <-  subset(RNA,rownames(RNA)%in%data)####第一个组织既有m6A和蛋白表达水平，可能有的基因
+  PRO_temp <- subset(PRO,rownames(PRO)%in%data)  
+  PRO_temp <- PRO_temp[!is.na(PRO_temp[,i]),]    
+  RNA_temp <-  subset(RNA,rownames(RNA)%in%data)
   RNA_temp <- RNA_temp[!is.na(RNA_temp[,i]),]
   PRO_temp <-  subset(PRO_temp,rownames(PRO_temp)%in%rownames(RNA_temp))
   Result_all[i,2] <- cor(RNA_temp[,i],PRO_temp[,i],method = "spearman")
@@ -182,7 +181,7 @@ P_UTR <- ggplot(Data,aes(Spearman,Cofficient))+
 library(ggplot2)
 library(RColorBrewer)
 library(tidyverse)
-####各个组织m6A基因蛋白与转录之间的Spearman相关性####
+
 Tissue_info <-  c("ISD","CT_VE","RT_VE","ULF_V1","SM_V1","RT_V1","CT_V1","TLF_V1","FL_R2","RT_R5","Pod_R6","RTN_R5","GSD_R7","MSD_R8")
 C <- read.delim("../../../3_19/conserved.txt")
 C <- C[grep("exon", C$annotation), ]
@@ -190,9 +189,9 @@ C <- unique(C[,13])
 folder_path <-"D:/Workspace/Glycine_max/m6A/3_19/nonconserved/nonconserved/"
 for (i in 1:14)
 {
-  # 构建文件路径
+  
   file_path <- file.path(folder_path, paste0("non", i, "conserved.anno.peak.new.anno.txt"))
-  # 导入数据
+  
   Data <- read.delim(file_path)
   Data <-Data[grep("exon", Data$annotation), ]
   Data <- unique(Data[,14])
@@ -207,7 +206,7 @@ for (i in 1:14) {
   name <- paste0("M", i)
   assign(name, Data)
 }
-##表达量关联##
+
 PRO <- read.csv("D:/Workspace/Glycine_max/Data/PRO_VSN_Gene_Tissue.csv",row.names = 1)
 ###RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue.csv",row.names = 1)###此处不要过滤后TPM文件
 RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue_1.csv",row.names = 1)
@@ -225,7 +224,7 @@ for (i in 1:nrow(PRO)) {
     if (is.na(PRO[i,j]) & !is.na(RNA[i,j])) {RNA[i,j] <- NA}
   }
 }
-##准备结果文件##
+
 Result_all <- data.frame(matrix("", nrow = 14, ncol =3))
 colnames(Result_all) <- c("Tissue","m6A","non-m6A")
 Result_all$Tissue <- Tissue_info
@@ -234,9 +233,9 @@ for (i in 1:14)
 { 
   name <- paste0("M", i)
   data <-get(name)
-  PRO_temp <- subset(PRO,rownames(PRO)%in%data)  ####第一个组织既有m6A又可能有蛋白表达水平的基因
-  PRO_temp <- PRO_temp[!is.na(PRO_temp[,i]),]    ####第一个组织既有m6A又有蛋白表达水平的基因
-  RNA_temp <-  subset(RNA,rownames(RNA)%in%data)####第一个组织既有m6A和蛋白表达水平，可能有的基因
+  PRO_temp <- subset(PRO,rownames(PRO)%in%data)  
+  PRO_temp <- PRO_temp[!is.na(PRO_temp[,i]),]    
+  RNA_temp <-  subset(RNA,rownames(RNA)%in%data)
   RNA_temp <- RNA_temp[!is.na(RNA_temp[,i]),]
   PRO_temp <-  subset(PRO_temp,rownames(PRO_temp)%in%rownames(RNA_temp))
   Result_all[i,2] <- cor(RNA_temp[,i],PRO_temp[,i],method = "spearman")
@@ -274,8 +273,4 @@ P_CDS<- ggplot(Data,aes(Spearman,Cofficient))+
   
 library(patchwork)
 P_ALL+P_UTR+P_CDS+plot_layout(nrow=1)
-
-
-
-####散点图####
 
