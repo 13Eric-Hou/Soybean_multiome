@@ -1,7 +1,7 @@
-####每个组织表达量Rank排列，搭配Y轴累计表达量####
+####Cumulative abundance plot####
 rm(list = ls())
 options(scipen = 100000)
-#导入表达量数据整理，添加evidence列#
+
 PRO <- read.csv("D:/Workspace/Glycine_max/Data/PRO_Raw_Gene_Tissue.csv",row.names = 1)
 RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue.csv",row.names = 1)
 PRO$omics_level <-"PRO"
@@ -11,7 +11,7 @@ RNA$omics_level <-"RNA"
 RNA$Gene_name <- rownames(RNA)
 rownames(RNA) <- 1:nrow(RNA)
 
-####准备每个组织的文件####
+####prepare data####
 Data_1_PRO <- PRO[!is.na(PRO[, 1]), c(1, 15, 16)]
 Data_2_PRO <- PRO[!is.na(PRO[, 2]), c(2, 15, 16)]
 Data_3_PRO <- PRO[!is.na(PRO[, 3]), c(3, 15, 16)]
@@ -40,16 +40,15 @@ Data_11_RNA <- RNA[!is.na(RNA[, 11]), c(11, 15, 16)]
 Data_12_RNA <- RNA[!is.na(RNA[, 12]), c(12, 15, 16)]
 Data_13_RNA <- RNA[!is.na(RNA[, 13]), c(13, 15, 16)]
 Data_14_RNA <- RNA[!is.na(RNA[, 14]), c(14, 15, 16)]
-#降序
+#disorder
 for (i in 1:14) {
   assign(paste0("Data_", i, "_PRO"), get(paste0("Data_", i, "_PRO"))[order(-get(paste0("Data_", i, "_PRO"))[, 1]), ])
 }
 for (i in 1:14) {
   assign(paste0("Data_", i, "_RNA"), get(paste0("Data_", i, "_RNA"))[order(-get(paste0("Data_", i, "_RNA"))[, 1]), ])
 }
-#加Rank
-# 为每个数据框添加一列Rank，内容为1到文件行数的连续数字
-# 为每个数据框添加一列Rank，内容为1到文件行数的连续数字
+#add Rank
+
 for (i in 1:14) {
   rows <- nrow(get(paste0("Data_", i, "_PRO")))
   assign(paste0("Data_", i, "_PRO"), cbind(get(paste0("Data_", i, "_PRO")), Rank = seq(1, rows)))
@@ -58,7 +57,7 @@ for (i in 1:14) {
   rows <- nrow(get(paste0("Data_", i, "_RNA")))
   assign(paste0("Data_", i, "_RNA"), cbind(get(paste0("Data_", i, "_RNA")), Rank = seq(1, rows)))
 }
-# 为每个数据框添加一列Intensity[%]，内容为NA
+# add Intensity[%]
 for (i in 1:14) {
   data <- get(paste0("Data_", i, "_PRO"))
   data$Intensity <- (data[, 1] / sum(data[, 1])) * 100
@@ -79,43 +78,41 @@ for (i in 1:14) {
   data$SUM <- cumsum(data[, 5])
   assign(paste0("Data_", i, "_RNA"), data)
 }
-# 循环遍历每个数据框，将PRO和RNA数据框合并存放在新的数据框中
+# incorporation
 for (i in 1:14) {
   data_PRO <- get(paste0("Data_", i, "_PRO"))
   data_RNA <- get(paste0("Data_", i, "_RNA"))
   assign(paste0("Data_", i), rbind(data_PRO, data_RNA))
 }
-# 只保留所有蛋白基因层次#RNA基因有删除
-# 循环遍历每个文件
+
 for (i in 1:14) {
-  # 获取文件名
   file_name <- paste0("Data_", i)
-  # 读取文件
+
   data <- get(file_name)
-  # 计算第四列的最大值
+
   max_value <- max(data[data[, 2] == "PRO", ][,4])
-  # 删除满足条件且第四列等于最大值的行
+
   condition <- data[, 2] == "RNA" & data[, 4] > max_value
   data <- data[!condition,]
-  # 更新文件
+
   assign(file_name, data)
 }
-####绘图####
+####plot ####
 library(ggplot2)
 library(tidyverse)
 library(ggthemes)
 library(RColorBrewer)
 for (i in 1:14)
   {
-  # 获取文件名
+ 
   file_name <- paste0("Data_", i)
-  # 读取文件
+
   data <- get(file_name)
   data$Rank <- log10(data$Rank)
-  # 更新文件
+
   assign(file_name, data)
 }
-###绘图###
+###plot###
 for (i in 1:14) {
   file_name <- paste0("Data_", i)
   data <- get(file_name)
@@ -158,12 +155,12 @@ P_5|P_9
 
 
 
-####基因整理####
+####gene tidy####
 Tidy <- data.frame()
 for (i in 1:14) {
-  # 获取文件名
+
   file_name <- paste0("Data_", i)
-  # 读取文件
+
   data <- get(file_name)
   top_10_rows <- head(data[order(data[, 4]), ], 10)
   top_10_rows <- top_10_rows[,-1]
@@ -175,11 +172,11 @@ write.csv(Tidy,file = "./Tidy.csv")
 
 
 ####TOP100####
-#把Rank变化为1，2，3，4等###
+
 for (i in 1:14) {
-  # 获取文件名
+
   file_name <- paste0("Data_", i)
-  # 读取文件
+
   data <- get(file_name)
   data$Rank <- 10^data$Rank
   assign(paste0("Data_", i), data)
@@ -199,7 +196,7 @@ Top100$count <- as.numeric(Top100$count)
 Top100$Category <- factor(Top100$Category,level=c("Shared","Not Shared"))
 Top100$Tissue <- factor(Top100$Tissue ,levels =rev(c("Pod_R6","GSD_R7","MSD_R8","ISD","RT_VE","RT_V1","RT_R5","RTN_R5",
                                                  "CT_VE","CT_V1","ULF_V1","TLF_V1","SM_V1","FL_R2")))
-##画图##
+##plot##
 library(ggplot2)
 library(tidyverse)
 library(RColorBrewer)
@@ -219,8 +216,8 @@ ggplot(data=Top100,aes(Tissue,count,fill=Category))+
   theme(legend.position = "bottom", legend.direction = "horizontal")
 
 
-####图3：不同组织前丰度基因累计柱状图排列####
-#寻找到每个组织中表达量最高的蛋白质#
+####TOP1####
+
 
 TOP <- data.frame()
 for (i in 1:14) 
