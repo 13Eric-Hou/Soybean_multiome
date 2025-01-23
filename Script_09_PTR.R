@@ -1,4 +1,4 @@
-####PTR计算####
+####PTR calculation ####
 library(ggplot2)
 library(reshape2)
 library(ggpubr)
@@ -7,19 +7,17 @@ library(RColorBrewer)
 library(cowplot)
 library(ggcor)
 library(ggthemes)
-##需要的文件：蛋白表达量；TPM表达量；（TPM小于1的表达量视为NA）
-##蛋白表达量/TPM表达量的结果，再取以2为底的对数；即是PTR
-##数据文件导入##
+##load data##
 rm(list = ls())
 PRO <- read.csv("D:/Workspace/Glycine_max/Data/PRO_Raw_Gene_Tissue.csv",row.names = 1)
 RNA <- read.csv("D:/Workspace/Glycine_max/Data/RNA_Tissue_1.csv",row.names = 1)
 PRO <- subset(PRO,rownames(PRO)%in%rownames(RNA))
 RNA <- subset(RNA,rownames(RNA)%in%rownames(PRO))
-##循环保留同时有的##
+
 PRO[!is.na(PRO) & is.na(RNA)]<- NA
 RNA[!is.na(RNA) & is.na(PRO)]<- NA
-identical(is.na(RNA), is.na(PRO))    ##判断是否转换成功
-##计算PTR##
+identical(is.na(RNA), is.na(PRO))   #adjust 
+##calculate PTR##
 PTR <-data.frame(matrix(nrow = 12855, ncol = 14))
 colnames(PTR) <-colnames(PRO)
 rownames(PTR) <-rownames(RNA)
@@ -35,23 +33,22 @@ for (i in 1:nrow(PRO))
 }
 
 write.csv(PTR,file = "./PTR_1.csv")
-##筛选出至少具有10对成对观测值的基因##
+##>=10 pair##
 PRO_n<-PRO[rowSums(is.na(PRO)) <= 4, ]
 RNA_n <-RNA[rowSums(is.na(RNA)) <= 4, ]
 PTR_n <- subset(PTR,rownames(PTR) %in% rownames(PRO_n))
-##准备曲线图文件
+
 Data <- data.frame(matrix(nrow = 9008, ncol = 15))
 colnames(Data) <- c("ISD","CT_VE","RT_VE","ULF_V1","SM_V1","RT_V1","CT_V1","TLF_V1","FL_R2","RT_R5","Pod_R6","RTN_R5","GSD_R7","MSD_R8","Median")
 rownames(Data) <- rownames(PTR_n)
 for (i in 1:14) {
   Data[,i] <- PTR_n[,i]
 }
-##Median PTR统计##
+##Median PTR count##
 Data[,15] <-apply(Data[, 1:14], 1, median, na.rm = TRUE)
 median <- median(Data$Median)
 sd <- sd(Data$Median)
-##画图##
-#整体的图
+
 data <- melt(Data[,c(1:14)])
 data <- data[!is.na(data[, 2]), ]
 data$variable <- factor(data$variable,levels =c("Pod_R6","GSD_R7","MSD_R8","ISD","RT_VE","RT_V1","RT_R5","RTN_R5",
@@ -84,13 +81,13 @@ ggplot(data,aes(value))+
 
 
 
-####密度散点图绘制####
-#准备文件：PRO_n；PTR_n；RNA_n
+####pointdenisty plot ####
+
 library(ggplot2)
 library(dplyr)
-library(viridis) # 使用viridis提供的翠绿色标度：scale_fill_viridis()
-library(ggpointdensity) # 绘制密度散点图
-library(cowplot) # 图形组合，可以自动对其坐标轴
+library(viridis) 
+library(ggpointdensity) # 
+library(cowplot)
 PRO_n<-PRO[rowSums(is.na(PRO)) <= 4, ]
 RNA_n <-RNA[rowSums(is.na(RNA)) <= 4, ]
 PRO_n <- apply(PRO_n, c(1, 2), log2)
@@ -107,7 +104,7 @@ PRO_P<- PRO_n[,c(15,16)]
 RNA_P<- RNA_n[,c(15,16)]
 PTR_P<- PTR_n[,c(15,16)]
 indices <- c(1734, 3468, 5202, 6936, 8673)
-####PRO绘制####
+####plot PRO level####
 ggplot(data = PRO_P, mapping = aes(x = Median, y = MAD)) +
   geom_pointdensity() +
   scale_color_viridis(option="C",begin = 0.05,end =0.9)+
@@ -121,7 +118,7 @@ ggplot(data = PRO_P, mapping = aes(x = Median, y = MAD)) +
   theme(legend.key.size = unit(10,"pt"))+
   scale_y_continuous(breaks = c(0, 1, 2, 3, 4, 5, 6))+
   labs(y="MAD protein(log2Expression)",x="Median protein(log2Expression)")
-##柱状图绘制
+##plot bar 
 PRO_MAD <-sort(PRO_P$MAD)[indices]
 PRO_MAD <-c(PRO_MAD[1], diff(PRO_MAD))
 PRO_MAD <-as.data.frame(PRO_MAD)
@@ -133,7 +130,7 @@ ggplot(PRO_MAD,aes(y=PRO_MAD,x=X))+
   scale_fill_manual(values = c("#6A51A3","#2171B5","#238B45","#FFFF33","#CB181D"))+
   theme_half_open()+
   theme(legend.position="none")
-####RNA绘制####
+####RNA plot ####
 ggplot(data = RNA_P, mapping = aes(x = Median, y = MAD)) +
   geom_pointdensity(adjust=3) +
   scale_color_viridis(option="C",begin = 0,end =1)+
@@ -142,7 +139,7 @@ ggplot(data = RNA_P, mapping = aes(x = Median, y = MAD)) +
                                                         colour = NA)) + theme(legend.position = c(0.1, 0.8))+
   theme(legend.key.size = unit(10,"pt"))+
   labs(y="MAD transcript(log2TPM)",x="Median transcript(log2TPM)")
-##柱状图绘制
+##plot bar 
 RNA_MAD <-sort(RNA_P$MAD)[indices]
 RNA_MAD <-c(RNA_MAD[1], diff(RNA_MAD))
 RNA_MAD <-as.data.frame(RNA_MAD)
@@ -154,7 +151,7 @@ ggplot(RNA_MAD,aes(y=RNA_MAD,x=X))+
   scale_fill_manual(values = c("#6A51A3","#2171B5","#238B45","#FFFF33","#CB181D"))+
   theme_half_open()+
   theme(legend.position="none")
-####PTR绘制####
+####PTR plot ####
 ggplot(data = PTR_P, mapping = aes(x = Median, y = MAD)) +
   geom_pointdensity(adjust=3) +
   scale_color_viridis(option="C",begin = 0,end =1)+
@@ -163,7 +160,7 @@ ggplot(data = PTR_P, mapping = aes(x = Median, y = MAD)) +
                                                         colour = NA)) + theme(legend.position = c(0.1, 0.8))+
   theme(legend.key.size = unit(10,"pt"))+
   labs(y="MAD log2PTR",x="Median log2PTR")
-##柱状图绘制
+##plot bar
 PTR_MAD <-sort(PTR_P$MAD)[indices]
 PTR_MAD <-c(PTR_MAD[1], diff(PTR_MAD))
 PTR_MAD <-as.data.frame(PTR_MAD)
